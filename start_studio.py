@@ -28,7 +28,6 @@ machine_map = {
     "CPU":  Machine.CPU,
     "T4":   Machine.T4,
     "L4":   Machine.L4,
-    "A10G": Machine.A10G,
     "A100": Machine.A100,
 }
 
