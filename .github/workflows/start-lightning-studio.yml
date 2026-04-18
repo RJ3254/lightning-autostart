@@ -17,15 +17,15 @@ on:
   workflow_dispatch:
     inputs:
       studio_name:
-        description: "Studio name (must already exist in Lightning AI)"
+        description: "claw"
         required: true
-        default: "my-studio"
+        default: "claw"
       teamspace:
-        description: "Teamspace name (leave blank for your personal space)"
+        description: "claw"
         required: false
-        default: ""
+        default: "claw"
       machine:
-        description: "Machine type: CPU | T4 | L4 | A10G | A100"
+        description: "CPU"
         required: false
         default: "CPU"
 
