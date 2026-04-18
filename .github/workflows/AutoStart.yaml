@@ -34,7 +34,7 @@ on:
   #   branches: [main]
  
 env:
-  # Fall back to repository-level defaults when not supplied via dispatch
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # ← add this
   STUDIO_NAME:  ${{ inputs.studio_name  || 'my-studio' }}
   TEAMSPACE:    ${{ inputs.teamspace    || '' }}
   MACHINE_TYPE: ${{ inputs.machine      || 'CPU' }}
