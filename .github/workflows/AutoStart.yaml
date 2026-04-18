@@ -1,0 +1,107 @@
+# .github/workflows/start-lightning-studio.yml
+#
+# Starts a Lightning AI Studio using the Lightning CLI / SDK.
+#
+# Required GitHub Secrets:
+#   LIGHTNING_API_KEY   – your Lightning AI API key
+#                         (Settings → Keys on lightning.ai)
+#   LIGHTNING_USERNAME  – your Lightning AI username
+#
+# Optional – adjust the inputs below or promote them to workflow inputs
+# so they can be overridden at dispatch time.
+ 
+name: Start Lightning AI Studio
+ 
+on:
+  # Run manually from the Actions tab with optional overrides
+  workflow_dispatch:
+    inputs:
+      studio_name:
+        description: "claw"
+        required: true
+        default: "claw"
+      teamspace:
+        description: "claw"
+        required: false
+        default: ""
+      machine:
+        description: "CPU"
+        required: false
+        default: "CPU"
+ 
+  # Alternatively, trigger on push / PR – remove or adjust as needed
+  # push:
+  #   branches: [main]
+ 
+env:
+  # Fall back to repository-level defaults when not supplied via dispatch
+  STUDIO_NAME:  ${{ inputs.studio_name  || 'my-studio' }}
+  TEAMSPACE:    ${{ inputs.teamspace    || '' }}
+  MACHINE_TYPE: ${{ inputs.machine      || 'CPU' }}
+ 
+jobs:
+  start-studio:
+    name: Start Lightning AI Studio
+    runs-on: ubuntu-latest
+ 
+    steps:
+      # ── 1. Check out repo (optional – remove if you don't need source code) ──
+      - name: Checkout repository
+        uses: actions/checkout@v4
+ 
+      # ── 2. Set up Python ──────────────────────────────────────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+ 
+      # ── 3. Install the Lightning SDK (includes the `lightning` CLI) ───────────
+      - name: Install lightning-sdk
+        run: pip install lightning-sdk --quiet
+ 
+      # ── 4. Authenticate with Lightning AI ─────────────────────────────────────
+      #   The SDK reads LIGHTNING_API_KEY and LIGHTNING_USERNAME from the
+      #   environment automatically – no explicit login command is needed.
+      #   If you prefer the CLI login flow, replace this step with:
+      #     run: lightning login --api-key ${{ secrets.LIGHTNING_API_KEY }}
+ 
+      # ── 5. Start the Studio via the Python SDK ────────────────────────────────
+      - name: Start Lightning AI Studio
+        env:
+          LIGHTNING_API_KEY:  ${{ secrets.LIGHTNING_API_KEY }}
+          LIGHTNING_USERNAME: ${{ secrets.LIGHTNING_USERNAME }}
+        run: |
+          python - <<'EOF'
+          import os
+          from lightning_sdk import Studio, Machine
+ 
+          studio_name  = os.environ["STUDIO_NAME"]
+          teamspace    = os.environ.get("TEAMSPACE") or None
+          username     = os.environ["LIGHTNING_USERNAME"]
+          machine_str  = os.environ.get("MACHINE_TYPE", "CPU").upper()
+ 
+          # Map the human-readable machine name to the SDK enum
+          machine_map = {
+              "CPU":  Machine.CPU,
+              "T4":   Machine.T4,
+              "A10G": Machine.A10G,
+              "A100": Machine.A100,
+              "L4":   Machine.L4,
+          }
+          machine = machine_map.get(machine_str, Machine.CPU)
+ 
+          print(f"Starting studio '{studio_name}' "
+                f"(teamspace={teamspace or username}, machine={machine_str}) …")
+ 
+          studio = Studio(
+              name=studio_name,
+              teamspace=teamspace or username,  # defaults to personal space
+              user=username,
+              create_ok=False,   # set True if you want to create it if missing
+          )
+ 
+          studio.start(machine=machine)
+          print(f"Studio status : {studio.status}")
+          print(f"Studio machine: {studio.machine}")
+          print("Studio started successfully ✔")
+          EOF
