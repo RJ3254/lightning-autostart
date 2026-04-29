@@ -38,3 +38,4 @@ jobs:
           LIGHTNING_API_KEY: ${{ secrets.LIGHTNING_API_KEY }}
         run: |
           lightning login
+          lightning studio start --name <ryujin> --teamspace <Rj3254x>/<claw> --machine cpu
