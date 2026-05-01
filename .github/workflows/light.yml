@@ -39,3 +39,5 @@ jobs:
         run: |
           lightning login
           lightning studio start --name ryujin --teamspace rj3254x/claw --machine CPU
+          lightning studio ssh --teamspace rj3254x/claw --name ryujin
+          npx paperclip run
